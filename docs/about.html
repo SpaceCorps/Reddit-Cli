@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About · Reddit CLI</title>
+  <meta name="description" content="About Reddit CLI: An open source native Rust command-line tool and agent interface for scraping Reddit posts, comments, communities, and users via Apify.">
+  <link rel="canonical" href="https://spacecorps.github.io/Reddit-Cli/about.html">
+  <meta property="og:title" content="About · Reddit CLI">
+  <meta property="og:description" content="About Reddit CLI: An open source native Rust command-line tool and agent interface for scraping Reddit posts, comments, communities, and users via Apify.">
+  <meta property="og:url" content="https://spacecorps.github.io/Reddit-Cli/about.html">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://spacecorps.github.io/Reddit-Cli/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="is-agentic-site-type" content="content">
+  <style>
+    body { background: #090d16; color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.7; padding: 40px 20px; }
+    .content-box { max-width: 800px; margin: 0 auto; background: rgba(22, 27, 46, 0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 40px; }
+    h1 { font-size: 2.2rem; margin-bottom: 20px; color: #fff; }
+    h2 { font-size: 1.4rem; margin-top: 30px; margin-bottom: 12px; color: #ff4500; }
+    p { margin-bottom: 16px; color: #94a3b8; }
+    a { color: #ff4500; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .back { display: inline-block; margin-bottom: 24px; color: #ff4500; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <div class="content-box">
+    <a href="./" class="back">&larr; Back to Reddit CLI</a>
+    <h1>About Reddit CLI</h1>
+    
+    <p>Reddit CLI (<code>reddit</code>) is a native, high-performance command-line tool and programmatic automation interface designed for retrieving and analyzing Reddit discussions, comments, communities, and user submissions. Developed and maintained under the SpaceCorps open-source engineering collective, the project equips developers and autonomous AI agents with a single, standalone binary capable of operating seamlessly across macOS, Linux, and Windows with zero runtime dependencies.</p>
+
+    <h2>Project Lineage & Motivation</h2>
+    <p>The original prototype tool was authored as a .NET global tool (<code>Reddit.Console</code>) by Niels Bosma, demonstrating the power of Apify's Reddit scraper for producing YAML structured feeds. In 2026, SpaceCorps ported the tool to Rust Edition 2024 to deliver instant cold-start execution (1–3 ms), eliminate managed runtime requirements, and integrate robust multi-account management with operating-system-level keystores.</p>
+
+    <h2>Key Architectural Principles</h2>
+    <p>Reddit CLI is built around speed, security, and agentic interoperability:</p>
+    <ul>
+      <li><strong>Native Keystore Security:</strong> API tokens are stored in the host OS credential manager (macOS Keychain, Windows DPAPI, Linux Secret Service) rather than plaintext configuration files.</li>
+      <li><strong>Agentic Output Protocol:</strong> Outputs human-friendly YAML by default and clean, structured JSON with <code>--json</code> for pipeline processing with <code>jq</code> or direct LLM tool-calling loops.</li>
+      <li><strong>Deterministic Error Envelopes:</strong> Stable error codes (<code>auth_required</code>, <code>rate_limited</code>, <code>not_found</code>, <code>invalid_input</code>, <code>no_account</code>) accompanied by remediation hints written to stderr.</li>
+    </ul>
+
+    <h2>Open Source & Community</h2>
+    <p>The code is released under the permissive MIT License. Contributions, feedback, and issue reports are welcome on the GitHub repository at <a href="https://github.com/SpaceCorps/Reddit-Cli" target="_blank" rel="noopener noreferrer">github.com/SpaceCorps/Reddit-Cli</a>.</p>
+  </div>
+</body>
+</html>

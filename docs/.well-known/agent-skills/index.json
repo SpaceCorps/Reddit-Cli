@@ -1,0 +1,11 @@
+{
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "reddit-cli",
+      "description": "Scrape Reddit posts, comments, communities, and user profiles via Apify actor with YAML/JSON output using a native Rust CLI.",
+      "type": "skill-md",
+      "url": "https://spacecorps.github.io/Reddit-Cli/llms.txt"
+    }
+  ]
+}

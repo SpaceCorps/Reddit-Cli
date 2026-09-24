@@ -1,0 +1,50 @@
+# Reddit CLI
+
+> A blazing fast native command-line tool and agent interface for scraping Reddit posts, comments, communities, and user profiles via Apify. Built in Rust for developers and autonomous AI agents.
+
+## When to Use This CLI
+
+Use the `reddit` CLI whenever you need to:
+- **Search Reddit discussions:** Search across Reddit for posts, comments, subreddits, or users with filtering by sort order, time window, and subreddit community.
+- **Scrape Reddit URLs:** Extract full post threads with comments, subreddit posts, or user post history from a URL.
+- **LLM Agent Context Retrieval:** Gather real-time human opinions, sentiment, technical discussions, and domain answers formatted as clean YAML or JSON.
+- **Machine-Readable Automation:** Drive search and scrape workflows with zero telemetry, instant cold-starts (1–3 ms), and structured error envelopes.
+
+Do NOT use this tool if:
+- You need official Reddit write actions (posting, upvoting, sending PMs).
+- You want an interactive GUI browser (use reddit.com instead).
+
+## Core Agent Operating Principles
+
+1. **Authentication:** Set `APIFY_TOKEN=...`, pass `--api-key <KEY>`, or store accounts in native OS keystores via `reddit login` / `reddit accounts add`.
+2. **Machine-Readable Outputs:** Supply `--json` whenever parsing command output in scripts, tool loops, or `jq`.
+3. **Execution Time:** Reddit scraping runs via the Apify actor `trudax/reddit-scraper-lite` and typically completes in 15–45 seconds.
+4. **Error Envelopes:** Errors are output on stderr with machine-readable codes (`auth_required`, `not_found`, `rate_limited`, `invalid_input`, `no_account`).
+
+## Key Command Patterns
+
+### Search
+- `reddit search "rust 2024"`: Search Reddit for recent posts.
+- `reddit search "concurrency" --community rust --json`: Search within r/rust and output JSON.
+- `reddit search "performance" --comments --json`: Search for comments matching query.
+- `reddit search "sysadmin" --communities`: Search for relevant subreddits.
+- `reddit search "devops" --users`: Search for user accounts.
+- `reddit search "ai agents" --sort top --time month --max-items 20`: Sort top posts from the past month.
+
+### Scrape
+- `reddit scrape "https://www.reddit.com/r/rust/comments/abc123/some_post/" --json`: Scrape post with full comment hierarchy.
+- `reddit scrape "https://www.reddit.com/r/csharp/" --max-posts 20`: Scrape community frontpage posts.
+- `reddit scrape "https://www.reddit.com/user/someuser/"`: Scrape user profile submissions.
+- `reddit scrape "https://www.reddit.com/r/programming/" --skip-comments`: Scrape posts only without comment trees.
+- `reddit scrape "https://www.reddit.com/r/rust/" --since 2025-01-01`: Only scrape posts published after date.
+
+### Account Management
+- `reddit login [name]`: Interactively authenticate with Apify token.
+- `reddit accounts list --check`: List all stored accounts and verify tokens.
+- `reddit accounts test <name>`: Verify connectivity and inspect token identity.
+- `reddit accounts remove <name> --yes`: Remove account from OS keystore.
+
+## Documentation & Links
+- Website: https://spacecorps.github.io/Reddit-Cli/
+- Full Agent Manual: https://spacecorps.github.io/Reddit-Cli/llms-full.txt
+- GitHub Repository: https://github.com/SpaceCorps/Reddit-Cli

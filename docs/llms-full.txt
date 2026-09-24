@@ -1,0 +1,159 @@
+# Reddit CLI — Exhaustive Agent & Developer Manual
+
+A high-performance native command-line tool and agent interface for scraping Reddit posts, comments, communities, and users via Apify. Built with Rust Edition 2024 for maximum performance, minimal cold-start latency, and reliable LLM agent tool-calling.
+
+Website: https://spacecorps.github.io/Reddit-Cli/
+Repository: https://github.com/SpaceCorps/Reddit-Cli
+Version: 1.0.0
+
+---
+
+## 1. Output & Error Protocol
+
+Reddit CLI adheres to the SpaceCorps Agentic Output Standard:
+- **Default Format:** YAML on stdout (high human and LLM readability).
+- **JSON Flag (`--json`):** Pretty-printed JSON on stdout with preserved key order for parsing via `jq` or agent automation loops.
+- **Diagnostics & Status:** Human status updates (e.g. "Searching Reddit...") and warning banners are routed to stderr, ensuring stdout remains pure, parseable data.
+- **Error Envelopes:** Errors are written to stderr in a structured format:
+  ```json
+  {
+    "error": "The API token was rejected or expired.",
+    "code": "auth_required",
+    "detail": "HTTP 401: Unauthorized",
+    "remediation": "reddit login <name> --api-key <key> --force"
+  }
+  ```
+
+### Exit Codes
+
+| Code | Name | Description | Agent Action |
+|---|---|---|---|
+| 0 | `ok` | Command completed successfully. | Proceed with next task. |
+| 1 | `error` | General or unclassified error. | Inspect error message; report to human if unrecoverable. |
+| 2 | `network` | Network connection error or Apify timeout. | Retry once with backoff; then report. |
+| 3 | `auth_required` | Missing, invalid, or expired API token. | Do NOT retry; ask human to provide token or run `reddit login`. |
+| 4 | `not_found` | Resource or URL not found. | Verify URL or arguments; do not retry same call. |
+| 5 | `rate_limited` | Apify rate limit encountered. | Back off exponentially before retrying. |
+| 6 | `invalid_input` | Missing required argument or illegal combination. | Fix CLI flags according to usage error. |
+| 7 | `no_account` | Named account not found or multiple accounts exist. | Run `reddit accounts list` to check account names. |
+
+---
+
+## 2. Authentication Architecture
+
+Requests to Apify's actor API require an API token. The CLI resolves tokens according to this hierarchy:
+1. `--api-key <KEY>` passed directly on the command line.
+2. `--account <NAME>` (or `-a <NAME>`) referencing an account securely stored in the host operating system's keystore.
+3. `APIFY_TOKEN` or `REDDIT_API_KEY` environment variables.
+4. If exactly one account is stored in the local config, that account is automatically used.
+5. If multiple accounts exist without `--account`, exit code 7 (`no_account`) lists available accounts.
+
+### Secure Keystores
+Tokens are stored encrypted:
+- **macOS:** macOS Keychain via `/usr/bin/security`.
+- **Windows:** Data Protection API (DPAPI).
+- **Linux:** Secret Service API via `secret-tool` (GNOME Keyring, KWallet).
+- **Headless / Plaintext Fallback:** Enabled only when `REDDIT_ALLOW_PLAINTEXT_STORE=1` is explicitly set.
+
+---
+
+## 3. Command Reference
+
+### `reddit search <QUERY> [OPTIONS]`
+Searches Reddit for submissions, comments, subreddits, or users.
+
+**Arguments:**
+- `<QUERY>` (Required): Search query string.
+
+**Options:**
+- `--community <NAME>`: Restrict search to a specific subreddit (e.g. `rust` or `technology`).
+- `--comments`: Search for comments matching query instead of posts.
+- `--communities`: Search for subreddits matching query.
+- `--users`: Search for Reddit usernames matching query.
+- `--sort <SORT>`: Sort order: `relevance`, `hot`, `top`, `new`, `rising`, `comments` (Default: `new`).
+- `--time <TIME>`: Time limit: `all`, `hour`, `day`, `week`, `month`, `year`.
+- `--max-items <N>`: Maximum items to return (Default: 10).
+- `--max-posts <N>`: Maximum posts per page (Default: 10).
+- `--max-comments <N>`: Maximum comments per post (Default: 10).
+- `--skip-comments`: Skip scraping comments on returned posts.
+- `--nsfw`: Include NSFW results.
+- `--since <DATE>`: Filter posts published after `YYYY-MM-DD`.
+- `--comments-since <DATE>`: Filter comments published after `YYYY-MM-DD`.
+- `--api-key <KEY>`: Override Apify token.
+- `-a, --account <NAME>`: Specify account to authenticate with.
+- `--json`: Output JSON format.
+
+**Examples:**
+```bash
+# Search for top posts about Rust 2024 from the past month
+reddit search "Rust 2024" --sort top --time month --json
+
+# Search for discussions within r/kubernetes
+reddit search "ebpf vs iptables" --community kubernetes --max-items 15
+
+# Search comments mentioning a specific tool
+reddit search "ripgrep" --comments --max-items 20
+```
+
+---
+
+### `reddit scrape <URL> [OPTIONS]`
+Scrapes a Reddit URL: single post thread with comments, subreddit page, or user profile.
+
+**Arguments:**
+- `<URL>` (Required): Target Reddit URL.
+
+**Options:**
+- `--skip-comments`: Do not scrape comment tree (faster scrape).
+- `--skip-user-posts`: Skip user submissions when scraping user profile.
+- `--skip-community`: Skip community metadata (still scrapes posts).
+- `--max-items <N>`: Total maximum items to save (Default: 10).
+- `--max-posts <N>`: Maximum posts per page (Default: 10).
+- `--max-comments <N>`: Maximum comments per post (Default: 10).
+- `--max-communities <N>`: Maximum community pages (Default: 2).
+- `--max-users <N>`: Maximum user pages (Default: 2).
+- `--since <DATE>`: Only include posts published after `YYYY-MM-DD`.
+- `--comments-since <DATE>`: Only include comments published after `YYYY-MM-DD`.
+- `--api-key <KEY>`: Override Apify token.
+- `-a, --account <NAME>`: Specify account to authenticate with.
+- `--json`: Output JSON format.
+
+**Examples:**
+```bash
+# Scrape a specific discussion thread with comments
+reddit scrape https://www.reddit.com/r/rust/comments/123/example_post/ --json
+
+# Scrape the frontpage of r/golang up to 25 posts without comments
+reddit scrape https://www.reddit.com/r/golang/ --max-posts 25 --skip-comments
+```
+
+---
+
+### `reddit login [NAME] [OPTIONS]`
+Stores an Apify API token into the system keystore.
+
+**Arguments:**
+- `[NAME]`: Account label (Default: `default`).
+
+**Options:**
+- `--api-key <KEY>`: API token passed directly.
+- `--api-key-stdin`: Read API token from stdin.
+- `--no-browser`: Do not open browser to Apify Integrations page.
+- `--force`: Overwrite existing account with same name.
+- `--no-verify`: Store without testing token against Apify `/users/me`.
+
+---
+
+### `reddit accounts <COMMAND>`
+Manages stored accounts in the local configuration.
+
+**Subcommands:**
+- `reddit accounts add <NAME> [--api-key <KEY>] [--api-key-stdin] [--force] [--no-verify]`
+- `reddit accounts list [--check]`
+- `reddit accounts test <NAME>`
+- `reddit accounts remove <NAME> [--yes]`
+
+---
+
+### `reddit agent-readme [--json]`
+Prints the embedded operating manual and agent rules directly from the binary with zero network requests.
